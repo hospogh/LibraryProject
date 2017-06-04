@@ -1,0 +1,6 @@
+/home/hospogh/RiderProjects/LibraryProject/LibraryProject/bin/Debug/LibraryProject.exe
+/home/hospogh/RiderProjects/LibraryProject/LibraryProject/bin/Debug//LibraryProject.pdb
+/home/hospogh/RiderProjects/LibraryProject/LibraryProject/obj/Debug/LibraryProject.csprojResolveAssemblyReference.cache
+/home/hospogh/RiderProjects/LibraryProject/LibraryProject/obj/Debug/LibraryProject.csproj.CoreCompileInputs.cache
+/home/hospogh/RiderProjects/LibraryProject/LibraryProject/obj/Debug/LibraryProject.exe
+/home/hospogh/RiderProjects/LibraryProject/LibraryProject/obj/Debug/LibraryProject.pdb
