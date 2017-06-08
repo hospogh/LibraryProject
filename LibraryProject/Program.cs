@@ -7,8 +7,7 @@ namespace LibraryProject
     {
         public static void Main(string[] args)
         {
-            
-            
+            //Console.WriteLine(Guid.NewGuid());
         }
     }
 }
@@ -25,11 +24,8 @@ Staff:
     6. Return a book    
     7. Calendar management
     8. Finance management  
-
 Client:
     1. Login
     2. Search books
     3. Reserve a book
-    
-
 */

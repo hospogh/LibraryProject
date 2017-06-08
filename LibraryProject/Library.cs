@@ -4,8 +4,9 @@ namespace LibraryProject
 {
     public class Library
     {
-        private static List<Book> books = new List<Book>();
-        
+        public static List<Book> books = new List<Book>();
+        private static List<User> Users = new List<User>();
+        private static List<Admin> admins = new List<Admin>();
         
     }
 }
