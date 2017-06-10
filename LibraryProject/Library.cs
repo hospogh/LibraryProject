@@ -1,78 +1,195 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace LibraryProject
 {
-    internal enum UserCommands
+    internal enum Commands
     {
-        none,
-        allCommands,
-        bookSearch,
-        bookReserve
-    }
+        none, // none
+        signUp, // default mode
+        signIn, // default mode 
 
-    internal enum DefaultCommands
-    {
-        none,
-        signUp,
-        signIn,
-        signOut,
-        searchBook
-    }
+        exit, // all modes
+        searchBook, // all modes 
+        allCommands, // all modes (last command for default mode)
 
-    internal enum AdminCommands
-    {
-        none,
-        allCommands,
+
+        //User commands
+        signOut, // user & admin modes
+        selectBook, //user & admin modes
+        bookReserve, // user & admin modes 
+        getBookId,
+        //Admin commands
         addAdmin,
         addBook,
         removeBookWithId,
         removeBook,
-        viweBookHistory
+        viweBookHistory,
     }
 
 
     public static class Library
     {
         public static List<Book> Books = new List<Book>();
-        private static List<User> _users = new List<User>();
-        private static List<Admin> _admins = new List<Admin>();
 
-        private static void PrintCommands(Type enumType)
-        {
-            string _res = enumType.GetEnumNames().Aggregate("", (current, val) => current + (val + " "));
-            Console.WriteLine(_res.Replace("none", ""));
-        }
+        private static List<Human> _users = new List<Human>();
+//        private static List<Admin> _admins = new List<Admin>();
 
-        private static T DetectCommand<T>(string str)
+        private static Commands DetectCommand(string str)
         {
             str = str.Trim().Split()[0];
-            Type type = typeof(T);
-            foreach (string val in type.GetEnumNames())
+            foreach (string val in typeof(Commands).GetEnumNames())
             {
                 if (val.Equals(str))
                 {
-                    return (T) Enum.Parse(type, val);
+                    return (Commands) Enum.Parse(typeof(Commands), str);
                 }
             }
-            return (T) Enum.Parse(type, "none");
+            return Commands.none;
         }
 
-        private static void CommandExecution<T>(T command)
+        private static void PrintCommands<T>(T currentHuman)
+        {
+            string _res = "";
+            string[] cmds = typeof(Commands).GetEnumNames();
+            int i;
+            int j;
+            if (currentHuman == null)
+            {
+                i = (int) Commands.signUp;
+                j = (int) Commands.allCommands;
+            }
+            else
+            {
+                i = (int) Commands.exit;
+                j = typeof(T) == typeof(User) ? (int) Commands.bookReserve : cmds.Length - 1;
+            }
+            while (i <= j)
+            {
+                _res += $"cmds[i] ";
+                i++;
+            }
+            Console.WriteLine(_res);
+        }
+
+        private static string GetPassword()
+        {
+            string password = "";
+            ConsoleKeyInfo key;
+            do
+            {
+                key = Console.ReadKey(true);
+                if (key.Key != ConsoleKey.Backspace && key.Key != ConsoleKey.Enter)
+                {
+                    password += key.KeyChar;
+                    Console.Write("");
+                }
+                else
+                {
+                    if (key.Key == ConsoleKey.Backspace && password.Length > 0)
+                    {
+                        password = password.Substring(0, (password.Length - 1));
+                        Console.Write("\b \b");
+                    }
+                }
+            } while (key.Key != ConsoleKey.Enter);
+            return Encode.Encrypt(password);
+        }
+
+        private static User SignUp()
+        {
+            Console.Write("Name: ");
+            string name = Console.ReadLine();
+            Console.Write("Surname: ");
+            string surname = Console.ReadLine();
+            Console.Write("Nickname: ");
+            string nickname = Console.ReadLine();
+            Console.Write("Password: ");
+            string password = GetPassword();
+            Console.Write("Telephone: ");
+            string telephone = Console.ReadLine();
+            return new User(name, surname, nickname, password, telephone);
+        }
+
+        private static Human SignIn()
+        {
+            Console.Write("Nickname: ");
+            string nickname = Console.ReadLine();
+            Console.Write("Password: ");
+            string password = GetPassword();
+            foreach (var usr in _users)
+            {
+                if (usr.Nickname == nickname && usr.Password == password)
+                {
+                    return usr;
+                }
+            }
+            MessageBox.Show("incorrect nickname or password.");
+            return null;
+        }
+
+        private static List<Book> StricktSearch(Name)
+
+        private static Book SearchBook()
         {
         }
 
         public static void Terminal()
         {
-            string line = Console.ReadLine();
+            Book selectedBook = null;
             Human currentHuman = null;
-            Type type = typeof(DefaultCommands);
-            while ()
+            Commands command = Commands.none;
+            while (command != Commands.exit)
             {
-                if (currentHuman == null && DetectCommand<>(line) != DefaultCommands.none)
+                string line = Console.ReadLine();
+                command = DetectCommand(line);
+                switch (command)
                 {
+                    case Commands.exit: return;
+                    case Commands.allCommands:
+                        PrintCommands(currentHuman);
+                        break;
+                    case Commands.signUp:
+                        if (currentHuman != null)
+                        {
+                            command = Commands.none;
+                            break;
+                        }
+                        currentHuman = SignUp();
+                        _users.Add(currentHuman);
+                        break;
+                    case Commands.signIn:
+                        if (currentHuman == null)
+                        {
+                            currentHuman = SignIn();
+                            break;
+                        }
+                        else
+                        {
+                            Console.WriteLine("{0}: command not found", line);
+                        }
+                        break;
+                    case Commands.searchBook:
+
+                        break;
+                    case Commands.signOut:
+                        currentHuman = null;
+                        selectedBook = null;
+                        break;
+                    case Commands.bookReserve: break;
+                    case Commands.addAdmin: break;
+                    case Commands.addBook: break;
+                    case Commands.removeBook: break;
+                    case Commands.removeBookWithId: break;
+                    case Commands.viweBookHistory: break;
+                }
+                if (command == Commands.none)
+                {
+                    Console.WriteLine("No command '{0}' found.", command);
                 }
             }
         }
