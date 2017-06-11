@@ -3,10 +3,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Dynamic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Windows.Forms;
+using Newtonsoft.Json;
 
 namespace LibraryProject
 {
@@ -57,7 +59,7 @@ namespace LibraryProject
             return Commands.none;
         }
 
-        private static void PrintCommands<T>(T currentHuman)
+        private static void PrintCommands(Human currentHuman)
         {
             string _res = "";
             string[] cmds = typeof(Commands).GetEnumNames();
@@ -71,12 +73,11 @@ namespace LibraryProject
             else
             {
                 i = (int) Commands.exit;
-                j = typeof(T) == typeof(User) ? (int) Commands.bookReserve : cmds.Length - 1;
+                j = currentHuman is User ? (int) Commands.bookReserve : cmds.Length - 1;
             }
             while (i <= j)
             {
-                _res += $"cmds[i] ";
-                i++;
+                _res += cmds[i++] + " ";
             }
             Console.WriteLine(_res);
         }
@@ -293,12 +294,17 @@ namespace LibraryProject
 
         public static void Terminal()
         {
+            const string bookPath = @"../../Books.json";
+            const string usersPath = @"../../Users.json";
+
+            _users.Add(new Admin("Hovsep", "Poghosyan", "hospogh", "PspUZ2/eVEVi3ADff5Zpuw=="));
             Human currentHuman = null;
             Commands command = Commands.none;
+
+            PrintCommands(currentHuman);
+            Console.WriteLine();
             while (command != Commands.exit)
             {
-                PrintCommands(currentHuman);
-                Console.WriteLine();
                 string line = Console.ReadLine();
                 command = DetectCommand(line);
                 Book selectedBook = null;
@@ -381,8 +387,11 @@ namespace LibraryProject
                 }
                 if (command == Commands.none)
                 {
-                    Console.WriteLine("No command '{0}' found.", command);
+                    Console.WriteLine("incorrect command.");
                 }
+
+                File.WriteAllText(bookPath, JsonConvert.SerializeObject(Books));
+                File.WriteAllText(usersPath, JsonConvert.SerializeObject(_users));
             }
         }
     }

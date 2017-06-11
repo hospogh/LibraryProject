@@ -7,7 +7,7 @@ namespace LibraryProject
     {
         public static void Main(string[] args)
         {
-            //Console.WriteLine(Guid.NewGuid());
+            Library.Terminal();
         }
     }
 }
@@ -16,7 +16,7 @@ namespace LibraryProject
     1. Library project
 
 Staff:
-    1. Login    
+    1. Login
     2. Book management         
     3. Client history
     4. Book history     
