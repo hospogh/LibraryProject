@@ -2,7 +2,9 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
+using System.Dynamic;
 using System.Linq;
+using System.Reflection;
 using System.Windows.Forms;
 
 namespace LibraryProject
@@ -23,6 +25,7 @@ namespace LibraryProject
         selectBook, //user & admin modes
         bookReserve, // user & admin modes 
         getBookId,
+
         //Admin commands
         addAdmin,
         addBook,
@@ -34,11 +37,12 @@ namespace LibraryProject
 
     public static class Library
     {
+        //Data
         public static List<Book> Books = new List<Book>();
 
         private static List<Human> _users = new List<Human>();
-//        private static List<Admin> _admins = new List<Admin>();
 
+        /* Methods */
         private static Commands DetectCommand(string str)
         {
             str = str.Trim().Split()[0];
@@ -112,7 +116,9 @@ namespace LibraryProject
             string password = GetPassword();
             Console.Write("Telephone: ");
             string telephone = Console.ReadLine();
-            return new User(name, surname, nickname, password, telephone);
+            User usr = new User(name, surname, nickname, password, telephone);
+            _users.Add(usr);
+            return usr;
         }
 
         private static Human SignIn()
@@ -132,21 +138,106 @@ namespace LibraryProject
             return null;
         }
 
-        private static List<Book> StricktSearch(Name)
+        //search
+        private static Book StricktSearch(string name, string author, int? age = null)
+        {
+            foreach (var book in Books)
+            {
+                if (book.Name == name && book.Author == author && book.BookAge == age)
+                {
+                    return book;
+                }
+            }
+            return null;
+        }
 
         private static Book SearchBook()
         {
+            Console.WriteLine("# strickt search");
+            Console.WriteLine("book name: ");
+            string name = Console.ReadLine();
+            Console.WriteLine("book author: ");
+            string author = Console.ReadLine();
+            Console.WriteLine("book age: ");
+            int? age;
+            try
+            {
+                age = int.Parse(s: Console.ReadLine());
+            }
+            catch
+            {
+                age = null;
+            }
+            return StricktSearch(name, author, age);
+        }
+
+        //book reserve
+        private static void BookReserve(Human human, Book selectedBook)
+        {
+            if (human == null)
+            {
+                Console.WriteLine("first sing in.");
+                return;
+            }
+            if (selectedBook == null)
+            {
+                Console.WriteLine("no book selected.");
+                return;
+            }
+            Console.WriteLine("are you want to reserve this book? (Y/n) : ");
+            string readLine = Console.ReadLine();
+            if (readLine != null && readLine.ToLower().Trim() == "y")
+            {
+                int lgt = selectedBook.BookHistory.Count;
+                if (!selectedBook.IsNowUsing)
+                {
+                    Console.WriteLine("book is already reserved.");
+                    return;
+                }
+                human.UserHistory.Add(new UserHistory(human, DateTime.Now,
+                    DateTime.Now.Add(new TimeSpan(30, 0, 0, 0))));
+                selectedBook.BookHistory.Add(new BookHistory(selectedBook, DateTime.Now,
+                    DateTime.Now.Add(new TimeSpan(30, 0, 0, 0))));
+            }
+        }
+
+        private static void AddAdmin()
+        {
+            Console.Write("Name: ");
+            string name = Console.ReadLine();
+            Console.Write("Surname: ");
+            string surname = Console.ReadLine();
+            Console.Write("Nickname: ");
+            string nickname = Console.ReadLine();
+            Console.Write("Password: ");
+            string password = GetPassword();
+            Console.Write("Telephone: ");
+            string telephone = Console.ReadLine();
+            _users.Add(new Admin(name, surname, nickname, password, telephone));
+        }
+
+        private static void AddBook()
+        {
+            Console.Write("Name: ");
+            string name = Console.ReadLine();
+            Console.Write("Author name: ");
+            string author = Console.ReadLine();
+            Console.Write("Age: ");
+            int age = int.Parse(s: Console.ReadLine());
+            Console.Write("Price: ");
+            Double? price = Double.Parse(Console.ReadLine());
+            Books.Add(new Book(name, author, age, price));
         }
 
         public static void Terminal()
         {
-            Book selectedBook = null;
             Human currentHuman = null;
             Commands command = Commands.none;
             while (command != Commands.exit)
             {
                 string line = Console.ReadLine();
                 command = DetectCommand(line);
+                Book selectedBook = null;
                 switch (command)
                 {
                     case Commands.exit: return;
@@ -170,18 +261,26 @@ namespace LibraryProject
                         }
                         else
                         {
-                            Console.WriteLine("{0}: command not found", line);
+                            Console.WriteLine($"{line}: command not found");
                         }
                         break;
                     case Commands.searchBook:
-
+                        selectedBook = SearchBook();
+                        Console.WriteLine(selectedBook == null ? "incorrect data." : "book is selected.");
                         break;
                     case Commands.signOut:
                         currentHuman = null;
                         selectedBook = null;
                         break;
-                    case Commands.bookReserve: break;
-                    case Commands.addAdmin: break;
+                    case Commands.bookReserve:
+                        BookReserve(currentHuman, selectedBook);
+                        break;
+                    case Commands.addAdmin:
+                        if (currentHuman is Admin)
+                        {
+                            AddAdmin();
+                        }
+                        break;
                     case Commands.addBook: break;
                     case Commands.removeBook: break;
                     case Commands.removeBookWithId: break;
