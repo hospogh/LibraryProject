@@ -49,18 +49,18 @@ namespace LibraryProject
 
     public class BookHistory
     {
-        public Human CurrentUser { get; set; }
+        public User CurrentUser { get; set; }
         public DateTime StartUsingTime { get; set; }
         public DateTime EndUsingTime { get; set; }
 
-        public BookHistory(Human currentUser, DateTime endTime)
+        public BookHistory(User currentUser, DateTime endTime)
         {
             CurrentUser = currentUser;
             EndUsingTime = endTime;
             StartUsingTime = DateTime.Now;
         }
 
-        public BookHistory(Human currentUser, DateTime startTime, DateTime endTime)
+        public BookHistory(User currentUser, DateTime startTime, DateTime endTime)
             : this(currentUser, endTime)
         {
             StartUsingTime = startTime;

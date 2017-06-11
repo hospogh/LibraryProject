@@ -24,14 +24,14 @@ namespace LibraryProject
 
 
         //User commands
-        signOut, // user & admin modes
+        signOut, // user & User modes
 
-        //user & admin modes
-        bookReserve, // user & admin modes 
+        //user & User modes
+        bookReserve, // user & User modes 
         getBookId,
 
-        //Admin commands
-        addAdmin,
+        //User commands
+        addUser,
         addBook,
         removeBook,
         viweBookHistory,
@@ -43,7 +43,7 @@ namespace LibraryProject
         //Data
         public static List<Book> Books = new List<Book>();
 
-        private static List<Human> _users = new List<Human>();
+        private static List<User> _users = new List<User>();
 
         /* Methods */
         private static Commands DetectCommand(string str)
@@ -59,13 +59,13 @@ namespace LibraryProject
             return Commands.none;
         }
 
-        private static void PrintCommands(Human currentHuman)
+        private static void PrintCommands(User currentUser)
         {
             string _res = "";
             string[] cmds = typeof(Commands).GetEnumNames();
             int i;
             int j;
-            if (currentHuman == null)
+            if (currentUser == null)
             {
                 i = (int) Commands.signUp;
                 j = (int) Commands.allCommands;
@@ -73,7 +73,7 @@ namespace LibraryProject
             else
             {
                 i = (int) Commands.exit;
-                j = currentHuman is User ? (int) Commands.bookReserve : cmds.Length - 1;
+                j = !currentUser.IsAdmin ? (int) Commands.bookReserve : cmds.Length - 1;
             }
             while (i <= j)
             {
@@ -92,7 +92,7 @@ namespace LibraryProject
                 if (key.Key != ConsoleKey.Backspace && key.Key != ConsoleKey.Enter)
                 {
                     password += key.KeyChar;
-                    Console.Write("");
+                    Console.Write("*");
                 }
                 else
                 {
@@ -118,17 +118,17 @@ namespace LibraryProject
             string password = GetPassword();
             Console.Write("Telephone: ");
             string telephone = Console.ReadLine();
-            User usr = new User(name, surname, nickname, password, telephone);
+            User usr = new User(false, name, surname, nickname, password, telephone);
             _users.Add(usr);
             return usr;
         }
 
-        private static Human SignIn()
+        private static User SignIn()
         {
             Console.Write("Nickname: ");
             string nickname = Console.ReadLine();
             Console.Write("Password: ");
-            string password = GetPassword();
+            string password = Encode.Encrypt(GetPassword());
             foreach (var usr in _users)
             {
                 if (usr.Nickname == nickname && usr.Password == password)
@@ -136,7 +136,7 @@ namespace LibraryProject
                     return usr;
                 }
             }
-            MessageBox.Show("incorrect nickname or password.");
+            MessageBox.Show("incorrect nickname / password.");
             return null;
         }
 
@@ -205,11 +205,11 @@ namespace LibraryProject
         }
 
         //book reserve
-        private static void BookReserve(Human human, Book selectedBook)
+        private static void BookReserve(User user, Book selectedBook)
         {
-            if (human == null)
+            if (user == null)
             {
-                Console.WriteLine("first sing in.");
+                Console.WriteLine("no signed in.");
                 return;
             }
             if (selectedBook == null)
@@ -227,14 +227,14 @@ namespace LibraryProject
                     Console.WriteLine("book is already reserved.");
                     return;
                 }
-                human.UserHistory.Add(new UserHistory(selectedBook, DateTime.Now,
+                user.UserHistory.Add(new UserHistory(selectedBook, DateTime.Now,
                     DateTime.Now.Add(new TimeSpan(30, 0, 0, 0))));
-                selectedBook.BookHistory.Add(new BookHistory(human, DateTime.Now,
+                selectedBook.BookHistory.Add(new BookHistory(user, DateTime.Now,
                     DateTime.Now.Add(new TimeSpan(30, 0, 0, 0))));
             }
         }
 
-        private static void AddAdmin()
+        private static void AddUser()
         {
             Console.Write("Name: ");
             string name = Console.ReadLine();
@@ -246,7 +246,7 @@ namespace LibraryProject
             string password = GetPassword();
             Console.Write("Telephone: ");
             string telephone = Console.ReadLine();
-            _users.Add(new Admin(name, surname, nickname, password, telephone));
+            _users.Add(new User(true, name, surname, nickname, password, telephone));
         }
 
         private static void AddBook()
@@ -262,7 +262,7 @@ namespace LibraryProject
             Books.Add(new Book(name, author, age, price));
         }
 
-        private static void RemoveBook(Human admin)
+        private static void RemoveBook(User User)
         {
             Book bk = null;
             Console.Write("Book ID: ");
@@ -281,7 +281,7 @@ namespace LibraryProject
                 return;
             }
             Console.Write("Password: ");
-            if (admin.Password == GetPassword())
+            if (User.Password == GetPassword())
             {
                 Books.Remove(bk);
                 Console.WriteLine($"Deleted book: {bk}");
@@ -297,11 +297,12 @@ namespace LibraryProject
             const string bookPath = @"../../Books.json";
             const string usersPath = @"../../Users.json";
 
-            _users.Add(new Admin("Hovsep", "Poghosyan", "hospogh", "PspUZ2/eVEVi3ADff5Zpuw=="));
-            Human currentHuman = null;
+//            _users = JsonConvert.DeserializeObject<List<User>>(File.ReadAllText(usersPath));
+//            Books = JsonConvert.DeserializeObject<List<Book>>(File.ReadAllText(bookPath));
+            User currentUser = null;
             Commands command = Commands.none;
 
-            PrintCommands(currentHuman);
+            PrintCommands(currentUser);
             Console.WriteLine();
             while (command != Commands.exit)
             {
@@ -312,21 +313,21 @@ namespace LibraryProject
                 {
                     case Commands.exit: return;
                     case Commands.allCommands:
-                        PrintCommands(currentHuman);
+                        PrintCommands(currentUser);
                         break;
                     case Commands.signUp:
-                        if (currentHuman != null)
+                        if (currentUser != null)
                         {
                             command = Commands.none;
                             break;
                         }
-                        currentHuman = SignUp();
-                        _users.Add(currentHuman);
+                        currentUser = SignUp();
+                        _users.Add(currentUser);
                         break;
                     case Commands.signIn:
-                        if (currentHuman == null)
+                        if (currentUser == null)
                         {
-                            currentHuman = SignIn();
+                            currentUser = SignIn();
                             break;
                         }
                         else
@@ -339,22 +340,22 @@ namespace LibraryProject
                         Console.WriteLine(selectedBook == null ? "incorrect data." : "book is selected.");
                         break;
                     case Commands.signOut:
-                        currentHuman = null;
+                        currentUser = null;
                         selectedBook = null;
                         break;
                     case Commands.bookReserve:
-                        BookReserve(currentHuman, selectedBook);
+                        BookReserve(currentUser, selectedBook);
                         break;
-                    case Commands.addAdmin:
-                        if (currentHuman is Admin)
+                    case Commands.addUser:
+                        if (currentUser is User)
                         {
-                            AddAdmin();
+                            AddUser();
                             break;
                         }
                         Console.WriteLine("incorrect command.");
                         break;
                     case Commands.addBook:
-                        if (currentHuman is Admin)
+                        if (currentUser is User)
                         {
                             AddBook();
                             break;
@@ -362,16 +363,16 @@ namespace LibraryProject
                         Console.WriteLine("incorrect command.");
                         break;
                     case Commands.removeBook:
-                        if (currentHuman is Admin)
+                        if (currentUser is User)
                         {
-                            RemoveBook(currentHuman);
+                            RemoveBook(currentUser);
                             break;
                         }
                         Console.WriteLine("incorrect command.");
                         break;
 
                     case Commands.viweBookHistory:
-                        if (currentHuman is Admin)
+                        if (currentUser is User)
                         {
                             if (selectedBook == null)
                             {

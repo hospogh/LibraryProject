@@ -5,93 +5,20 @@ using System.Windows.Forms;
 
 namespace LibraryProject
 {
-    public abstract class Human
+    public sealed class User
     {
-        public abstract string Name { get; set; }
-        public abstract string Surname { get; set; }
-        public abstract string Nickname { get; set; }
-        public abstract string Password { get; set; }
-        public abstract string Telephone { get; set; }
-        public abstract List<UserHistory> UserHistory { get; set; }
+        public string Name { get; set; }
 
+        public bool IsAdmin { get; set; }
+        public string Surname { get; set; }
+        public string Nickname { get; set; }
+        public string Password { get; set; }
+        public string Telephone { get; set; }
+        public List<UserHistory> UserHistory { get; set; }
 
-        public override string ToString()
+        public User(bool isAdmin, string name, string surname, string nickname, string password)
         {
-            return $"Nickname(Name Surname)";
-        }
-    }
-
-    public sealed class Admin : Human
-    {
-        // fields
-        public override string Name { get; set; }
-
-        public override string Surname { get; set; }
-        public override string Nickname { get; set; }
-        public override string Password { get; set; }
-        public override string Telephone { get; set; }
-        public override List<UserHistory> UserHistory { get; set; }
-
-        //constructors
-        public Admin(string name, string surname, string nickname, string password)
-        {
-            Name = name;
-            Surname = surname;
-            Nickname = nickname;
-            Password = password;
-        }
-
-        public Admin(string name, string surname, string nickname, string password, string telephone) : this(name,
-            surname, nickname, password)
-        {
-            Telephone = telephone;
-        }
-
-        //methods
-        public void AddBook(Book book, List<Book> allBooks)
-        {
-            allBooks.Add(book);
-        }
-
-        public void RemoveBook(Guid bookId, List<Book> allBooks)
-        {
-            foreach (Book book in allBooks)
-            {
-                if (book.Id != bookId) continue;
-                allBooks.Remove(book);
-                MessageBox.Show("Book is removed.");
-                return;
-            }
-            MessageBox.Show("No Book with this Id.");
-        }
-
-        public void RemoveBook(string bookName, string authorName, List<Book> allBooks)
-        {
-            //strickt search
-            foreach (Book book in allBooks)
-            {
-                if (book.Name != bookName || book.Author != authorName) continue;
-                allBooks.Remove(book);
-                MessageBox.Show("Book is removed.");
-                return;
-            }
-            MessageBox.Show("No Book with this Id.");
-        }
-    }
-
-
-    public sealed class User : Human
-    {
-        public override string Name { get; set; }
-        public override string Surname { get; set; }
-        public override string Nickname { get; set; }
-        public override string Password { get; set; }
-        public override string Telephone { get; set; }
-
-        public override List<UserHistory> UserHistory { get; set; }
-
-        public User(string name, string surname, string nickname, string password)
-        {
+            IsAdmin = isAdmin;
             Name = name;
             Surname = surname;
             Nickname = nickname;
@@ -99,11 +26,42 @@ namespace LibraryProject
             UserHistory = new List<UserHistory>();
         }
 
-        public User(string name, string surname, string nickname, string password, string telephone) : this(name,
+        public User(bool isAdmin, string name, string surname, string nickname, string password,
+            string telephone) : this(isAdmin, name,
             surname, nickname, password)
         {
             Telephone = telephone;
         }
+
+        public void AddBook(Book book, List<Book> allBooks)
+        {
+            if (IsAdmin)
+            {
+                allBooks.Add(book);
+            }
+            else
+            {
+                Console.WriteLine("IsAdmin:false");
+            }
+        }
+
+        public void RemoveBook(Guid bookId, List<Book> allBooks)
+        {
+            if (!IsAdmin)
+            {
+                Console.WriteLine("IsAdmin:false");
+                return;
+            }
+            foreach (Book book in allBooks)
+            {
+                if (book.Id != bookId) continue;
+                allBooks.Remove(book);
+                Console.WriteLine("Book is removed.");
+                return;
+            }
+            Console.WriteLine("No Book with this Id.");
+        }
+
     }
 
     public class UserHistory
