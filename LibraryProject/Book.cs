@@ -23,6 +23,10 @@ namespace LibraryProject
             Id = Guid.NewGuid();
         }
 
+        public Book()
+        {
+        }
+
         public Book(string name, string author, int bookAge, double price) : this(name, author, bookAge)
         {
             Price = price;
@@ -52,6 +56,10 @@ namespace LibraryProject
         public User CurrentUser { get; set; }
         public DateTime StartUsingTime { get; set; }
         public DateTime EndUsingTime { get; set; }
+
+        public BookHistory()
+        {
+        }
 
         public BookHistory(User currentUser, DateTime endTime)
         {

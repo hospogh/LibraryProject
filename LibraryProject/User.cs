@@ -26,6 +26,10 @@ namespace LibraryProject
             UserHistory = new List<UserHistory>();
         }
 
+        public User()
+        {
+        }
+
         public User(bool isAdmin, string name, string surname, string nickname, string password,
             string telephone) : this(isAdmin, name,
             surname, nickname, password)
@@ -61,7 +65,6 @@ namespace LibraryProject
             }
             Console.WriteLine("No Book with this Id.");
         }
-
     }
 
     public class UserHistory
@@ -75,6 +78,10 @@ namespace LibraryProject
             Book = book;
             EndUsingTime = endTime;
             StartUsingTime = DateTime.Now;
+        }
+
+        public UserHistory()
+        {
         }
 
         public UserHistory(Book book, DateTime startTime, DateTime endTime)

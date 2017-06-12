@@ -1,11 +1,1 @@
-[
-    {
-        "Name": "Hovsep",
-        "IsAdmin": true,
-        "Surname": "Poghosyan",
-        "Nickname": "hospogh",
-        "Password": "PspUZ2/eVEVi3ADff5Zpuw==",
-        "Telephone": "",
-        "UserHistory": []
-    }
-]
+[{"Name":"Hovsep","IsAdmin":true,"Surname":"Poghosyan","Nickname":"hospogh","Password":"PspUZ2/eVEVi3ADff5Zpuw==","Telephone":"","UserHistory":[]},{"Name":"asdf","IsAdmin":true,"Surname":"asdf","Nickname":"a","Password":"cfeQP7PvVLu8Cq0oNyCGLw==","Telephone":"","UserHistory":[]},{"Name":"asdf","IsAdmin":true,"Surname":"a","Nickname":"asdf","Password":"cfeQP7PvVLu8Cq0oNyCGLw==","Telephone":"","UserHistory":[]}]

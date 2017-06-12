@@ -128,7 +128,8 @@ namespace LibraryProject
             Console.Write("Nickname: ");
             string nickname = Console.ReadLine();
             Console.Write("Password: ");
-            string password = Encode.Encrypt(GetPassword());
+            string password = GetPassword();
+            password = Encode.Encrypt(password);
             foreach (var usr in _users)
             {
                 if (usr.Nickname == nickname && usr.Password == password)
@@ -297,8 +298,8 @@ namespace LibraryProject
             const string bookPath = @"../../Books.json";
             const string usersPath = @"../../Users.json";
 
-//            _users = JsonConvert.DeserializeObject<List<User>>(File.ReadAllText(usersPath));
-//            Books = JsonConvert.DeserializeObject<List<Book>>(File.ReadAllText(bookPath));
+            _users = JsonConvert.DeserializeObject<List<User>>(File.ReadAllText(usersPath));
+            Books = JsonConvert.DeserializeObject<List<Book>>(File.ReadAllText(bookPath));
             User currentUser = null;
             Commands command = Commands.none;
 
