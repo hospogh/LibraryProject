@@ -1,12 +1,6 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
-using System.Dynamic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Security.Cryptography;
 using System.Windows.Forms;
 using Newtonsoft.Json;
 
@@ -31,7 +25,7 @@ namespace LibraryProject
         getBookId,
 
         //User commands
-        addUser,
+        addAdmin,
         addBook,
         removeBook,
         viweBookHistory,
@@ -61,7 +55,7 @@ namespace LibraryProject
 
         private static void PrintCommands(User currentUser)
         {
-            string _res = "";
+            string res = "";
             string[] cmds = typeof(Commands).GetEnumNames();
             int i;
             int j;
@@ -77,9 +71,9 @@ namespace LibraryProject
             }
             while (i <= j)
             {
-                _res += cmds[i++] + " ";
+                res += cmds[i++] + " ";
             }
-            Console.WriteLine(_res);
+            Console.WriteLine(res);
         }
 
         private static string GetPassword()
@@ -92,7 +86,7 @@ namespace LibraryProject
                 if (key.Key != ConsoleKey.Backspace && key.Key != ConsoleKey.Enter)
                 {
                     password += key.KeyChar;
-                    Console.Write("*");
+                    Console.Write("");
                 }
                 else
                 {
@@ -112,10 +106,20 @@ namespace LibraryProject
             string name = Console.ReadLine();
             Console.Write("Surname: ");
             string surname = Console.ReadLine();
+            newNickname:
             Console.Write("Nickname: ");
             string nickname = Console.ReadLine();
+            foreach (User user in _users)
+            {
+                if (user.Nickname == nickname)
+                {
+                    Console.WriteLine("nickname is busy");
+                    goto newNickname;
+                }
+            }
             Console.Write("Password: ");
             string password = GetPassword();
+            Console.WriteLine();
             Console.Write("Telephone: ");
             string telephone = Console.ReadLine();
             User usr = new User(false, name, surname, nickname, password, telephone);
@@ -128,8 +132,7 @@ namespace LibraryProject
             Console.Write("Nickname: ");
             string nickname = Console.ReadLine();
             Console.Write("Password: ");
-            string password = GetPassword();
-            password = Encode.Encrypt(password);
+            string password = Encode.Encrypt(GetPassword());
             foreach (var usr in _users)
             {
                 if (usr.Nickname == nickname && usr.Password == password)
@@ -138,6 +141,7 @@ namespace LibraryProject
                 }
             }
             MessageBox.Show("incorrect nickname / password.");
+            Console.WriteLine();
             return null;
         }
 
@@ -235,19 +239,28 @@ namespace LibraryProject
             }
         }
 
-        private static void AddUser()
+        private static int GetUserIndexByNickname(string nickname, List<User> users)
         {
-            Console.Write("Name: ");
-            string name = Console.ReadLine();
-            Console.Write("Surname: ");
-            string surname = Console.ReadLine();
+            for (int i = 0; i < users.Count; i++)
+            {
+                if (users[i].IsAdmin)
+                    return i;
+            }
+            return -1;
+        }
+
+        private static void AddAdmin()
+        {
             Console.Write("Nickname: ");
             string nickname = Console.ReadLine();
-            Console.Write("Password: ");
-            string password = GetPassword();
-            Console.Write("Telephone: ");
-            string telephone = Console.ReadLine();
-            _users.Add(new User(true, name, surname, nickname, password, telephone));
+            int ind = GetUserIndexByNickname(nickname, _users);
+            if (ind != -1 && !_users[ind].IsAdmin)
+            {
+                _users[ind].IsAdmin = true;
+                Console.WriteLine($"user {nickname} is became admin");
+                return;
+            }
+            Console.WriteLine($"incorrect nickname({nickname})");
         }
 
         private static void AddBook()
@@ -259,11 +272,11 @@ namespace LibraryProject
             Console.Write("Age: ");
             int age = int.Parse(s: Console.ReadLine());
             Console.Write("Price: ");
-            double price = Double.Parse(s: Console.ReadLine());
+            decimal price = Decimal.Parse(s: Console.ReadLine());
             Books.Add(new Book(name, author, age, price));
         }
 
-        private static void RemoveBook(User User)
+        private static void RemoveBook(User user)
         {
             Book bk = null;
             Console.Write("Book ID: ");
@@ -282,7 +295,7 @@ namespace LibraryProject
                 return;
             }
             Console.Write("Password: ");
-            if (User.Password == GetPassword())
+            if (user.Password == GetPassword())
             {
                 Books.Remove(bk);
                 Console.WriteLine($"Deleted book: {bk}");
@@ -297,7 +310,7 @@ namespace LibraryProject
         {
             const string bookPath = @"../../Books.json";
             const string usersPath = @"../../Users.json";
-
+            Console.WriteLine();
             _users = JsonConvert.DeserializeObject<List<User>>(File.ReadAllText(usersPath));
             Books = JsonConvert.DeserializeObject<List<Book>>(File.ReadAllText(bookPath));
             User currentUser = null;
@@ -347,10 +360,10 @@ namespace LibraryProject
                     case Commands.bookReserve:
                         BookReserve(currentUser, selectedBook);
                         break;
-                    case Commands.addUser:
+                    case Commands.addAdmin:
                         if (currentUser is User)
                         {
-                            AddUser();
+                            AddAdmin();
                             break;
                         }
                         Console.WriteLine("incorrect command.");
